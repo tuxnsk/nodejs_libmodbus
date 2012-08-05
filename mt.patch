@@ -1,0 +1,364 @@
+diff -cr ./libmodbus.orig/src/modbus.c ./libmodbus/src/modbus.c
+*** ./libmodbus.orig/src/modbus.c	2012-08-05 00:18:58.759236164 +0700
+--- ./libmodbus/src/modbus.c	2012-08-05 13:18:22.383806497 +0700
+***************
+*** 1457,1468 ****
+--- 1457,1477 ----
+      ctx->backend->close(ctx);
+  }
+  
++ void modbus_close_mt(modbus_t *ctx)
++ {
++     if (ctx == NULL)
++         return;
++ 	
++     ctx->backend->close_mt(ctx);
++ }
++ 
+  void modbus_free(modbus_t *ctx)
+  {
+      if (ctx == NULL)
+          return;
+  
+      free(ctx->backend_data);
++     free(ctx->mt_data);
+      free(ctx);
+  }
+  
+diff -cr ./libmodbus.orig/src/modbus.h ./libmodbus/src/modbus.h
+*** ./libmodbus.orig/src/modbus.h	2012-08-05 00:18:58.759236164 +0700
+--- ./libmodbus/src/modbus.h	2012-08-05 00:34:09.946607407 +0700
+***************
+*** 169,174 ****
+--- 169,175 ----
+  
+  EXPORT int modbus_connect(modbus_t *ctx);
+  EXPORT void modbus_close(modbus_t *ctx);
++ EXPORT void modbus_close_mt(modbus_t *ctx);
+  
+  EXPORT void modbus_free(modbus_t *ctx);
+  
+diff -cr ./libmodbus.orig/src/modbus-private.h ./libmodbus/src/modbus-private.h
+*** ./libmodbus.orig/src/modbus-private.h	2012-08-05 00:18:58.759236164 +0700
+--- ./libmodbus/src/modbus-private.h	2012-08-05 16:42:01.380981708 +0700
+***************
+*** 109,114 ****
+--- 109,115 ----
+                                     const uint8_t *rsp, int rsp_length);
+      int (*connect) (modbus_t *ctx);
+      void (*close) (modbus_t *ctx);
++     void (*close_mt) (modbus_t *ctx);
+      int (*flush) (modbus_t *ctx);
+      int (*select) (modbus_t *ctx, fd_set *rset, struct timeval *tv, int msg_length);
+  } modbus_backend_t;
+***************
+*** 124,129 ****
+--- 125,131 ----
+      struct timeval byte_timeout;
+      const modbus_backend_t *backend;
+      void *backend_data;
++     void *mt_data;
+  };
+  
+  void _modbus_init_common(modbus_t *ctx);
+diff -cr ./libmodbus.orig/src/modbus-rtu.c ./libmodbus/src/modbus-rtu.c
+*** ./libmodbus.orig/src/modbus-rtu.c	2012-08-05 00:18:58.759236164 +0700
+--- ./libmodbus/src/modbus-rtu.c	2012-08-05 16:42:20.000920293 +0700
+***************
+*** 937,942 ****
+--- 937,950 ----
+  #endif
+  }
+  
++ void _modbus_rtu_close_mt(modbus_t *ctx)
++ {
++ 	_modbus_rtu_close(ctx);
++ 	
++ 	modbus_rtu_mt_t *ctx_mt = ctx->mt_data;
++ 	write(ctx_mt->mtp_w, "q", 1);
++ }
++ 
+  int _modbus_rtu_flush(modbus_t *ctx)
+  {
+  #if defined(_WIN32)
+***************
+*** 964,970 ****
+          return -1;
+      }
+  #else
+!     while ((s_rc = select(ctx->s+1, rset, NULL, NULL, tv)) == -1) {
+          if (errno == EINTR) {
+              if (ctx->debug) {
+                  fprintf(stderr, "A non blocked signal was caught\n");
+--- 972,984 ----
+          return -1;
+      }
+  #else
+! 	/* Add pipe descriptor to select */
+! 	modbus_rtu_mt_t *ctx_mt = ctx->mt_data;
+! 	FD_SET(ctx_mt->mtp_r, rset);
+! 	
+! 	int max_n = (ctx->s > ctx_mt->mtp_r) ? ctx->s : ctx_mt->mtp_r;
+! 	
+!     while ((s_rc = select(max_n+1, rset, NULL, NULL, tv)) == -1) {
+          if (errno == EINTR) {
+              if (ctx->debug) {
+                  fprintf(stderr, "A non blocked signal was caught\n");
+***************
+*** 972,977 ****
+--- 986,992 ----
+              /* Necessary after an error */
+              FD_ZERO(rset);
+              FD_SET(ctx->s, rset);
++             FD_SET(ctx_mt->mtp_r, rset);
+          } else {
+              return -1;
+          }
+***************
+*** 983,989 ****
+          return -1;
+      }
+  #endif
+! 
+      return s_rc;
+  }
+  
+--- 998,1009 ----
+          return -1;
+      }
+  #endif
+! 	if (FD_ISSET(ctx_mt->mtp_r, rset)) {
+! 		/* Connection reset. */
+! 		errno = ECONNRESET;
+! 		return -1;
+! 	}
+! 	
+      return s_rc;
+  }
+  
+***************
+*** 1004,1009 ****
+--- 1024,1030 ----
+      _modbus_rtu_pre_check_confirmation,
+      _modbus_rtu_connect,
+      _modbus_rtu_close,
++     _modbus_rtu_close_mt,
+      _modbus_rtu_flush,
+      _modbus_rtu_select
+  };
+***************
+*** 1014,1019 ****
+--- 1035,1041 ----
+  {
+      modbus_t *ctx;
+      modbus_rtu_t *ctx_rtu;
++     modbus_rtu_mt_t *ctx_mt;
+      size_t dest_size;
+      size_t ret_size;
+  
+***************
+*** 1062,1067 ****
+--- 1084,1103 ----
+  #endif
+  
+      ctx_rtu->confirmation_to_ignore = FALSE;
++     
++     /* Create pipe chanel */
++     ctx->mt_data = (modbus_rtu_mt_t *) malloc(sizeof(modbus_rtu_mt_t));
++     ctx_mt = (modbus_rtu_mt_t *)ctx->mt_data;
++     
++     int mtp[2];
++     if (pipe(mtp) == -1) {
++         fprintf(stderr, "ERROR Can't create pipe (%s)\n",
++ 			strerror(errno));
++ 		modbus_free(ctx);
++         return NULL;
++     }
++     ctx_mt->mtp_r = mtp[0];
++     ctx_mt->mtp_w = mtp[1];
+  
+      return ctx;
+  }
+diff -cr ./libmodbus.orig/src/modbus-rtu-private.h ./libmodbus/src/modbus-rtu-private.h
+*** ./libmodbus.orig/src/modbus-rtu-private.h	2012-08-05 00:18:58.759236164 +0700
+--- ./libmodbus/src/modbus-rtu-private.h	2012-08-05 13:05:29.868153690 +0700
+***************
+*** 94,97 ****
+--- 94,103 ----
+      int confirmation_to_ignore;
+  } modbus_rtu_t;
+  
++ typedef struct _modbus_rtu_mt {
++ 	/* Pipes for control in multithread */
++     int mtp_r;
++     int mtp_w;
++ } modbus_rtu_mt_t;
++ 
+  #endif /* _MODBUS_RTU_PRIVATE_H_ */
+diff -cr ./libmodbus.orig/src/modbus-tcp.c ./libmodbus/src/modbus-tcp.c
+*** ./libmodbus.orig/src/modbus-tcp.c	2012-08-05 00:18:58.759236164 +0700
+--- ./libmodbus/src/modbus-tcp.c	2012-08-05 16:40:20.187983011 +0700
+***************
+*** 404,409 ****
+--- 404,420 ----
+      close(ctx->s);
+  }
+  
++ void _modbus_tcp_close_mt(modbus_t *ctx)
++ {
++ 	_modbus_tcp_close(ctx);
++ 	
++ 	modbus_tcp_mt_t *ctx_mt = ctx->mt_data;
++ 	if (ctx_mt->lst_socket != -1) {
++ 		shutdown(ctx_mt->lst_socket, SHUT_RDWR);
++ 		close(ctx_mt->lst_socket);
++ 	}
++ }
++ 
+  int _modbus_tcp_flush(modbus_t *ctx)
+  {
+      int rc;
+***************
+*** 448,453 ****
+--- 459,465 ----
+      int yes;
+      struct sockaddr_in addr;
+      modbus_tcp_t *ctx_tcp = ctx->backend_data;
++     modbus_tcp_mt_t *ctx_mt = ctx->mt_data;
+  
+  #ifdef OS_WIN32
+      if (_modbus_tcp_init_win32() == -1) {
+***************
+*** 481,486 ****
+--- 493,500 ----
+          close(new_socket);
+          return -1;
+      }
++     
++     ctx_mt->lst_socket = new_socket;
+  
+      return new_socket;
+  }
+***************
+*** 495,500 ****
+--- 509,515 ----
+      const char *service;
+      int new_socket;
+      modbus_tcp_pi_t *ctx_tcp_pi = ctx->backend_data;
++     modbus_tcp_mt_t *ctx_mt = ctx->mt_data;
+  
+      if (ctx_tcp_pi->node[0] == 0)
+          node = NULL; /* == any */
+***************
+*** 577,582 ****
+--- 592,599 ----
+      if (new_socket < 0) {
+          return -1;
+      }
++     
++     ctx_mt->lst_socket = new_socket;
+  
+      return new_socket;
+  }
+***************
+*** 671,676 ****
+--- 688,694 ----
+      _modbus_tcp_pre_check_confirmation,
+      _modbus_tcp_connect,
+      _modbus_tcp_close,
++     _modbus_tcp_close_mt,
+      _modbus_tcp_flush,
+      _modbus_tcp_select
+  };
+***************
+*** 693,698 ****
+--- 711,717 ----
+      _modbus_tcp_pre_check_confirmation,
+      _modbus_tcp_pi_connect,
+      _modbus_tcp_close,
++     _modbus_tcp_close_mt,
+      _modbus_tcp_flush,
+      _modbus_tcp_select
+  };
+***************
+*** 701,706 ****
+--- 720,726 ----
+  {
+      modbus_t *ctx;
+      modbus_tcp_t *ctx_tcp;
++     modbus_tcp_mt_t *ctx_mt;
+      size_t dest_size;
+      size_t ret_size;
+  
+***************
+*** 727,732 ****
+--- 747,755 ----
+  
+      ctx->backend_data = (modbus_tcp_t *) malloc(sizeof(modbus_tcp_t));
+      ctx_tcp = (modbus_tcp_t *)ctx->backend_data;
++     
++     ctx->mt_data = (modbus_tcp_mt_t *) malloc(sizeof(modbus_tcp_mt_t));
++     ctx_mt = (modbus_tcp_mt_t *)ctx->mt_data;
+  
+      dest_size = sizeof(char) * 16;
+      ret_size = strlcpy(ctx_tcp->ip, ip, dest_size);
+***************
+*** 746,751 ****
+--- 769,776 ----
+  
+      ctx_tcp->port = port;
+      ctx_tcp->t_id = 0;
++     
++     ctx_mt->lst_socket = -1;
+  
+      return ctx;
+  }
+***************
+*** 755,760 ****
+--- 780,786 ----
+  {
+      modbus_t *ctx;
+      modbus_tcp_pi_t *ctx_tcp_pi;
++     modbus_tcp_mt_t *ctx_mt;
+      size_t dest_size;
+      size_t ret_size;
+  
+***************
+*** 768,773 ****
+--- 794,802 ----
+  
+      ctx->backend_data = (modbus_tcp_pi_t *) malloc(sizeof(modbus_tcp_pi_t));
+      ctx_tcp_pi = (modbus_tcp_pi_t *)ctx->backend_data;
++     
++     ctx->mt_data = (modbus_tcp_mt_t *) malloc(sizeof(modbus_tcp_mt_t));
++     ctx_mt = (modbus_tcp_mt_t *)ctx->mt_data;
+  
+      dest_size = sizeof(char) * _MODBUS_TCP_PI_NODE_LENGTH;
+      ret_size = strlcpy(ctx_tcp_pi->node, node, dest_size);
+***************
+*** 802,807 ****
+--- 831,838 ----
+      }
+  
+      ctx_tcp_pi->t_id = 0;
++     
++     ctx_mt->lst_socket = -1;
+  
+      return ctx;
+  }
+diff -cr ./libmodbus.orig/src/modbus-tcp-private.h ./libmodbus/src/modbus-tcp-private.h
+*** ./libmodbus.orig/src/modbus-tcp-private.h	2012-08-05 00:18:58.759236164 +0700
+--- ./libmodbus/src/modbus-tcp-private.h	2012-08-05 13:10:33.941086664 +0700
+***************
+*** 53,56 ****
+--- 53,62 ----
+      char service[_MODBUS_TCP_PI_SERVICE_LENGTH];
+  } modbus_tcp_pi_t;
+  
++ 
++ typedef struct _modbus_tcp_mt {
++ 	/* Main listen socket */
++     int lst_socket;
++ } modbus_tcp_mt_t;
++ 
+  #endif /* _MODBUS_TCP_PRIVATE_H_ */
