@@ -10,8 +10,8 @@
     "node": ">= 0.8.0"
   },
   "scripts": {
-    "install": "node-waf configure build",
-    "preuninstall": "rm -rf build/*"
+    "install": "./make_libmodbus.sh && node-waf configure build",
+    "preuninstall": "rm -rf libmodbus build"
   },
   "author": {
     "name": "Davydov Denis",

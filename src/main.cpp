@@ -2,15 +2,13 @@
 #include <v8.h>
 #include <node.h>
 #include <node_version.h>
-//#include <modbus.h>
-#include </home/tux/src/libmodbus/src/modbus.h>
+#include <modbus.h>
 #include <string.h>
 #include <errno.h>
 #include <unistd.h> 
 #include <sys/socket.h>
 
 #include <iostream>
-//#include <unistd.h>
 
 using namespace v8;
 using namespace node;
