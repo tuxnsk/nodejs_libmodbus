@@ -17,5 +17,15 @@
     "name": "Davydov Denis",
     "email": "mail@tuxnsk.ru"
   },
+  "maintainers": [
+    {
+      "name": "Davydov Denis",
+      "email": "mail@tuxnsk.ru"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tuxnsk/nodejs_libmodbus.git"
+  },
   "license": "BSD"
 }
