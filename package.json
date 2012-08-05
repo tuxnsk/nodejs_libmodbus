@@ -1,0 +1,21 @@
+{
+  "name": "modbus",
+  "version": "0.0.1",
+  "description": "libmodbus binding",
+  "keywords": [
+    "modbus"
+  ],
+  "main": "modbus.js",
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "scripts": {
+    "install": "node-waf configure build",
+    "preuninstall": "rm -rf build/*"
+  },
+  "author": {
+    "name": "Davydov Denis",
+    "email": "mail@tuxnsk.ru"
+  },
+  "license": "BSD"
+}
