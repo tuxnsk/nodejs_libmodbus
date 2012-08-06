@@ -2,7 +2,8 @@
 
 var mb = require("./build/Release/modbus_binding");
 
-var DBG = true;
+//var DBG = true;
+var DBG = false;
 
 var log = console.log;
 
@@ -935,7 +936,7 @@ function createMasterTcp(a, con, cbs) {
 	
 	if (DBG) mb.set_debug(ctx, 1);
 	
-	var api = makeMasterApi(1, ctx);
+	var api = makeMasterApi(a, ctx);
 	
 	api.destroy = function () {
 		isWorking = false;
@@ -969,7 +970,6 @@ function createMasterRtu(a, con, cbs) {
 	var isWorking = false;
 	
 	// создаем контекст подключения
-	//var ctx = mb.new_tcp(con.ip, con.port);
 	var ctx = mb.new_rtu(con.device, con.baud, con.parity, con.dataBit, con.stopBit);
 	if (!ctx) {
 		a.err('createMasterRtu: ' + mb.strerror());
