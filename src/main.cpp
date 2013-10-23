@@ -686,7 +686,7 @@ void tcp_accept_w(uv_work_t* req) {
     request->ret = modbus_tcp_accept(request->ctx, &(request->socket));
 }
 
-void tcp_accept_a(uv_work_t* req) {
+void tcp_accept_a(uv_work_t* req, int arg) {
     HandleScope scope;
 	
     tcp_accept_t* request = (tcp_accept_t*)req->data;
@@ -733,7 +733,7 @@ void receive_w(uv_work_t* req) {
     request->len = modbus_receive(request->ctx, request->req);
 }
 
-void receive_a(uv_work_t* req) {
+void receive_a(uv_work_t* req, int arg) {
     HandleScope scope;
 	
     receive_t* request = (receive_t*)req->data;
@@ -792,7 +792,7 @@ void connect_w(uv_work_t* req) {
     request->ret = modbus_connect(request->ctx);
 }
 
-void connect_a(uv_work_t* req) {
+void connect_a(uv_work_t* req, int arg) {
     HandleScope scope;
 	
     connect_t* request = (connect_t*)req->data;
