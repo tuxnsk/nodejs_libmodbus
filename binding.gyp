@@ -5,7 +5,6 @@
 				'targets': [
 					{
 						'target_name': 'modbus_binding',
-						'type': '<(library)',
 						'cflags': [
 							'-Wall',
 						],
