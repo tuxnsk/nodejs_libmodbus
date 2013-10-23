@@ -1,7 +1,6 @@
 'use strict';
 
-//var mb = require("./build/Release/modbus_binding");
-var mb = require("./build/Release/modbus_binding.so");
+var mb = require("./build/Release/modbus_binding");
 
 //var DBG = true;
 var DBG = false;

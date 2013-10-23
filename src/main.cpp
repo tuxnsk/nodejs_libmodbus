@@ -967,3 +967,6 @@ extern "C" void init (Handle<Object> target) {
 	target->Set(String::New("connect_async"), FunctionTemplate::New(connect_async)->GetFunction());
 	target->Set(String::New("close_mt"), FunctionTemplate::New(close_mt)->GetFunction());
 }
+
+void Initialize (Handle<Object> exports);
+NODE_MODULE(modbus_binding, init)
