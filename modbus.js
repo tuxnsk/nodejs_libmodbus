@@ -691,6 +691,7 @@ function createConRtu(id, device, baud, parity, dataBit, stopBit) {
 	
 	return {
 		type: 'RTU',
+		id: id,
 		device: device,
 		baud: baud,
 		parity: parity,
