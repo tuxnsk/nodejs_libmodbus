@@ -1,6 +1,6 @@
-diff -cr ./libmodbus.orig/src/modbus.c ./libmodbus/src/modbus.c
-*** ./libmodbus.orig/src/modbus.c	2012-08-05 00:18:58.759236164 +0700
---- ./libmodbus/src/modbus.c	2012-08-05 13:18:22.383806497 +0700
+diff -cr -x .git ./libmodbus.orig/src/modbus.c ./libmodbus/src/modbus.c
+*** ./libmodbus.orig/src/modbus.c	2014-02-07 22:46:00.000000000 +0100
+--- ./libmodbus/src/modbus.c	2014-02-07 22:46:48.000000000 +0100
 ***************
 *** 1457,1468 ****
 --- 1457,1477 ----
@@ -25,9 +25,9 @@ diff -cr ./libmodbus.orig/src/modbus.c ./libmodbus/src/modbus.c
       free(ctx);
   }
   
-diff -cr ./libmodbus.orig/src/modbus.h ./libmodbus/src/modbus.h
-*** ./libmodbus.orig/src/modbus.h	2012-08-05 00:18:58.759236164 +0700
---- ./libmodbus/src/modbus.h	2012-08-05 00:34:09.946607407 +0700
+diff -cr -x .git ./libmodbus.orig/src/modbus.h ./libmodbus/src/modbus.h
+*** ./libmodbus.orig/src/modbus.h	2014-02-07 22:46:00.000000000 +0100
+--- ./libmodbus/src/modbus.h	2014-02-07 22:46:48.000000000 +0100
 ***************
 *** 169,174 ****
 --- 169,175 ----
@@ -38,9 +38,9 @@ diff -cr ./libmodbus.orig/src/modbus.h ./libmodbus/src/modbus.h
   
   EXPORT void modbus_free(modbus_t *ctx);
   
-diff -cr ./libmodbus.orig/src/modbus-private.h ./libmodbus/src/modbus-private.h
-*** ./libmodbus.orig/src/modbus-private.h	2012-08-05 00:18:58.759236164 +0700
---- ./libmodbus/src/modbus-private.h	2012-08-05 16:42:01.380981708 +0700
+diff -cr -x .git ./libmodbus.orig/src/modbus-private.h ./libmodbus/src/modbus-private.h
+*** ./libmodbus.orig/src/modbus-private.h	2014-02-07 22:46:00.000000000 +0100
+--- ./libmodbus/src/modbus-private.h	2014-02-07 22:46:48.000000000 +0100
 ***************
 *** 109,114 ****
 --- 109,115 ----
@@ -61,21 +61,25 @@ diff -cr ./libmodbus.orig/src/modbus-private.h ./libmodbus/src/modbus-private.h
   };
   
   void _modbus_init_common(modbus_t *ctx);
-diff -cr ./libmodbus.orig/src/modbus-rtu.c ./libmodbus/src/modbus-rtu.c
-*** ./libmodbus.orig/src/modbus-rtu.c	2012-08-05 00:18:58.759236164 +0700
---- ./libmodbus/src/modbus-rtu.c	2012-08-05 16:42:20.000920293 +0700
+diff -cr -x .git ./libmodbus.orig/src/modbus-rtu.c ./libmodbus/src/modbus-rtu.c
+*** ./libmodbus.orig/src/modbus-rtu.c	2014-02-07 22:46:00.000000000 +0100
+--- ./libmodbus/src/modbus-rtu.c	2014-02-07 22:58:00.000000000 +0100
 ***************
 *** 937,942 ****
---- 937,950 ----
+--- 937,954 ----
   #endif
   }
   
 + void _modbus_rtu_close_mt(modbus_t *ctx)
 + {
++   ssize_t size;
 + 	_modbus_rtu_close(ctx);
 + 	
 + 	modbus_rtu_mt_t *ctx_mt = ctx->mt_data;
-+ 	write(ctx_mt->mtp_w, "q", 1);
++ 	size = write(ctx_mt->mtp_w, "q", 1);
++   if (size == -1)
++     fprintf(stderr, "ERROR returned by write() (%s)\n",
++       strerror(errno));
 + }
 + 
   int _modbus_rtu_flush(modbus_t *ctx)
@@ -90,7 +94,7 @@ diff -cr ./libmodbus.orig/src/modbus-rtu.c ./libmodbus/src/modbus-rtu.c
           if (errno == EINTR) {
               if (ctx->debug) {
                   fprintf(stderr, "A non blocked signal was caught\n");
---- 972,984 ----
+--- 976,988 ----
           return -1;
       }
   #else
@@ -106,7 +110,7 @@ diff -cr ./libmodbus.orig/src/modbus-rtu.c ./libmodbus/src/modbus-rtu.c
                   fprintf(stderr, "A non blocked signal was caught\n");
 ***************
 *** 972,977 ****
---- 986,992 ----
+--- 990,996 ----
               /* Necessary after an error */
               FD_ZERO(rset);
               FD_SET(ctx->s, rset);
@@ -123,7 +127,7 @@ diff -cr ./libmodbus.orig/src/modbus-rtu.c ./libmodbus/src/modbus-rtu.c
       return s_rc;
   }
   
---- 998,1009 ----
+--- 1002,1013 ----
           return -1;
       }
   #endif
@@ -138,7 +142,7 @@ diff -cr ./libmodbus.orig/src/modbus-rtu.c ./libmodbus/src/modbus-rtu.c
   
 ***************
 *** 1004,1009 ****
---- 1024,1030 ----
+--- 1028,1034 ----
       _modbus_rtu_pre_check_confirmation,
       _modbus_rtu_connect,
       _modbus_rtu_close,
@@ -148,7 +152,7 @@ diff -cr ./libmodbus.orig/src/modbus-rtu.c ./libmodbus/src/modbus-rtu.c
   };
 ***************
 *** 1014,1019 ****
---- 1035,1041 ----
+--- 1039,1045 ----
   {
       modbus_t *ctx;
       modbus_rtu_t *ctx_rtu;
@@ -158,7 +162,7 @@ diff -cr ./libmodbus.orig/src/modbus-rtu.c ./libmodbus/src/modbus-rtu.c
   
 ***************
 *** 1062,1067 ****
---- 1084,1103 ----
+--- 1088,1107 ----
   #endif
   
       ctx_rtu->confirmation_to_ignore = FALSE;
@@ -179,9 +183,9 @@ diff -cr ./libmodbus.orig/src/modbus-rtu.c ./libmodbus/src/modbus-rtu.c
   
       return ctx;
   }
-diff -cr ./libmodbus.orig/src/modbus-rtu-private.h ./libmodbus/src/modbus-rtu-private.h
-*** ./libmodbus.orig/src/modbus-rtu-private.h	2012-08-05 00:18:58.759236164 +0700
---- ./libmodbus/src/modbus-rtu-private.h	2012-08-05 13:05:29.868153690 +0700
+diff -cr -x .git ./libmodbus.orig/src/modbus-rtu-private.h ./libmodbus/src/modbus-rtu-private.h
+*** ./libmodbus.orig/src/modbus-rtu-private.h	2014-02-07 22:46:00.000000000 +0100
+--- ./libmodbus/src/modbus-rtu-private.h	2014-02-07 22:46:48.000000000 +0100
 ***************
 *** 94,97 ****
 --- 94,103 ----
@@ -195,9 +199,9 @@ diff -cr ./libmodbus.orig/src/modbus-rtu-private.h ./libmodbus/src/modbus-rtu-pr
 + } modbus_rtu_mt_t;
 + 
   #endif /* _MODBUS_RTU_PRIVATE_H_ */
-diff -cr ./libmodbus.orig/src/modbus-tcp.c ./libmodbus/src/modbus-tcp.c
-*** ./libmodbus.orig/src/modbus-tcp.c	2012-08-05 00:18:58.759236164 +0700
---- ./libmodbus/src/modbus-tcp.c	2012-08-05 16:40:20.187983011 +0700
+diff -cr -x .git ./libmodbus.orig/src/modbus-tcp.c ./libmodbus/src/modbus-tcp.c
+*** ./libmodbus.orig/src/modbus-tcp.c	2014-02-07 22:46:00.000000000 +0100
+--- ./libmodbus/src/modbus-tcp.c	2014-02-07 22:46:48.000000000 +0100
 ***************
 *** 404,409 ****
 --- 404,420 ----
@@ -346,9 +350,9 @@ diff -cr ./libmodbus.orig/src/modbus-tcp.c ./libmodbus/src/modbus-tcp.c
   
       return ctx;
   }
-diff -cr ./libmodbus.orig/src/modbus-tcp-private.h ./libmodbus/src/modbus-tcp-private.h
-*** ./libmodbus.orig/src/modbus-tcp-private.h	2012-08-05 00:18:58.759236164 +0700
---- ./libmodbus/src/modbus-tcp-private.h	2012-08-05 13:10:33.941086664 +0700
+diff -cr -x .git ./libmodbus.orig/src/modbus-tcp-private.h ./libmodbus/src/modbus-tcp-private.h
+*** ./libmodbus.orig/src/modbus-tcp-private.h	2014-02-07 22:46:00.000000000 +0100
+--- ./libmodbus/src/modbus-tcp-private.h	2014-02-07 22:46:48.000000000 +0100
 ***************
 *** 53,56 ****
 --- 53,62 ----
