@@ -836,6 +836,35 @@ Handle<Value> close_mt(const Arguments& args) {
 	return Undefined();
 }
 
+// Decode HEX value to a float or double
+Handle<Value> hex_decode(const Arguments& args) {
+	HandleScope scope;
+	int nArgs = args.Length();
+
+	if (nArgs != 2 && nArgs != 4) {
+		return ThrowException(Exception::TypeError(String::New("Need at least 2 or 4 16-bit numbers")));
+	}
+
+	uint16_t input[nArgs];
+	for (int i = 0; i < nArgs; i++) {
+		input[i] = (uint16_t) args[i]->ToInteger()->Value();
+	}
+
+	if (nArgs == 2) {
+		uint32_t raw_value = (((uint32_t) input[0]) << 16) + input[1];
+		float output;
+		memcpy(&output, &raw_value, sizeof(float));
+
+		return scope.Close(Number::New(output));
+	} else {
+		uint64_t raw_value = (((uint64_t) input[0]) << 48) + ((uint64_t) input[1] << 32) + ((uint32_t) input[2] << 16) + input[3];
+		double output;
+		memcpy(&output, &raw_value, sizeof(double));
+
+		return scope.Close(Number::New(output));
+	}
+}
+
 extern "C" void init (Handle<Object> target) {
 	HandleScope scope;
 	
@@ -966,6 +995,9 @@ extern "C" void init (Handle<Object> target) {
 	target->Set(String::New("receive_async"), FunctionTemplate::New(receive_async)->GetFunction());
 	target->Set(String::New("connect_async"), FunctionTemplate::New(connect_async)->GetFunction());
 	target->Set(String::New("close_mt"), FunctionTemplate::New(close_mt)->GetFunction());
+
+	// HEX Decoding stuff
+	target->Set(String::NewSymbol("hex_decode"), FunctionTemplate::New(hex_decode)->GetFunction());
 }
 
 void Initialize (Handle<Object> exports);

@@ -1031,6 +1031,11 @@ function createMaster(a, args) {
 reg2signed
 reg2float
 */
+// Decode a HEX-encoded float (2 regs) or double (4 regs) response
+// params: resp (usually the response of the modbus device) (array)
+function hexDecode(resp) {
+	return mb.hex_decode.apply(null, resp);
+}
 
 function create() {
 	var onError = null; // функция - обработчик ошибок
