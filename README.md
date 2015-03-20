@@ -11,93 +11,98 @@ Module have native function and framework.
 # Framework examples #
 ## Creating slave device (server) ##
 
-    var log = console.log;
-    var mb = require('modbus').create();
-    
-    // create device memory map
-    var data = mb.createData({ countReg: 5, countBit: 2 });
-    data.setReg(2, 321);
-    data.setBit(1, true);
-    data.dumpData(); // show memory map
-    
-    // create slave device
-    var ctx = mb.createSlave({
-      
-      // connection type and params
-      con: mb.createConTcp('127.0.0.1', 1502),
-      //con: mb.createConRtu(1, '/dev/ttyS0', 9600),
-      
-      // data map
-      data: data,
-      
-      // callback functions
-      onQuery: function () {
-        log('onQuery');
-        //ctx.dumpData();
-        log(ctx.getBits(0, 2));
-      },
-      onDestroy: function () {
-        log('onDestroy');
-      }
-    });
-    
-    // destroy device
-    //setTimeout(function () {
-    //  ctx.destroy();
-    //}, 5000);
+```javascript
+var log = console.log;
+var mb = require('modbus').create();
+
+// create device memory map
+var data = mb.createData({ countReg: 5, countBit: 2 });
+data.setReg(2, 321);
+data.setBit(1, true);
+data.dumpData(); // show memory map
+
+// create slave device
+var ctx = mb.createSlave({
+
+  // connection type and params
+  con: mb.createConTcp('127.0.0.1', 1502),
+  //con: mb.createConRtu(1, '/dev/ttyS0', 9600),
+  
+  // data map
+  data: data,
+
+  // callback functions
+  onQuery: function () {
+    log('onQuery');
+    //ctx.dumpData();
+    log(ctx.getBits(0, 2));
+  },
+  onDestroy: function () {
+    log('onDestroy');
+  }
+});
+
+// destroy device
+//setTimeout(function () {
+//  ctx.destroy();
+//}, 5000);
+```
 
 ## Creating master device (client) ##
 
-    var log = console.log;
-    var mb = require('modbus').create();
-    
-    mb.onError(function (msg) {
-      log('ERROR', msg);
-    });
-    
-    // create master device
-    var ctx = mb.createMaster({
-    
-      // connection type and params
-      con: mb.createConTcp('127.0.0.1', 1502),
-      //con: mb.createConRtu(1, '/dev/ttyS1', 9600),
-      
-      // callback functions
-      onConnect: function () {
-        log('onConnect');
-        log(ctx.getReg(2));
-        ctx.setBit(1, false);
-        ctx.destroy();
-      },
-      onDestroy: function () {
-        log('onDestroy');
-      }
-    });
+```javascript
+var log = console.log;
+var mb = require('modbus').create();
+
+mb.onError(function (msg) {
+  log('ERROR', msg);
+});
+
+// create master device
+var ctx = mb.createMaster({
+
+  // connection type and params
+  con: mb.createConTcp('127.0.0.1', 1502),
+  //con: mb.createConRtu(1, '/dev/ttyS1', 9600),
+
+  // callback functions
+  onConnect: function () {
+    log('onConnect');
+    log(ctx.getReg(2));
+    ctx.setBit(1, false);
+    ctx.destroy();
+  },
+  onDestroy: function () {
+    log('onDestroy');
+  }
+});
+```
 
 # Creating master device use native function #
 WARNING: native function blocking all processes!
 
-    var log = console.log;
-    var native = require('modbus').native;
-    
-    // create context
-    var ctx = native.new_tcp("127.0.0.1", 1502);
-    
-    // connect to slave device
-    native.connect(ctx);
-    
-    // get value
-    var result = [];
-    native.read_registers(ctx, 2, 1, result);
-    log(result[0]);
-    
-    // set value
-    native.write_bit(ctx, 1, native.OFF);
-    
-    // close context
-    native.close(ctx);
-    native.free(ctx);
+```javascript
+var log = console.log;
+var native = require('modbus').native;
 
+// create context
+var ctx = native.new_tcp("127.0.0.1", 1502);
+
+// connect to slave device
+native.connect(ctx);
+
+// get value
+var result = [];
+native.read_registers(ctx, 2, 1, result);
+log(result[0]);
+
+// set value
+native.write_bit(ctx, 1, native.OFF);
+
+// close context
+native.close(ctx);
+native.free(ctx);
+```
 
 # API #
 
