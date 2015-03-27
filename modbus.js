@@ -459,7 +459,7 @@ function dataChange(a, args) {
 	};
 	
 	funcs['setSlave'] = function () {
-		console.log("setting slave to:" + val);
+		//console.log("setting slave to:" + val);
 		if (mb.set_slave(ctx, val) == -1) {
 		    a.err(func + ': ' + mb.strerror());
 		}
