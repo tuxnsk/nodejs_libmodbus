@@ -458,6 +458,13 @@ function dataChange(a, args) {
 		}
 	};
 	
+	funcs['setSlave'] = function () {
+		console.log("setting slave to:" + val);
+		if (mb.set_slave(ctx, val) == -1) {
+		    a.err(func + ': ' + mb.strerror());
+		}
+	};
+	
 	return funcs[func]();
 }
 
@@ -916,6 +923,10 @@ function makeMasterApi(a, ctx) {
 	
 	api.setRegs = function (adr, val) {
 		dataChange(a, { func: 'setRegs', ctx: ctx, adr: adr, val: val });
+	};
+	
+	api.setSlave = function(val) {
+		dataChange(a, { func: 'setSlave', ctx: ctx, val: val });
 	};
 	
 	api.getContext = function () {
