@@ -140,6 +140,7 @@ void js_free(const v8::FunctionCallbackInfo<v8::Value>& args) {
 // Undefined get_byte_timeout(External, Object);
 void js_get_byte_timeout(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	Isolate* isolate = v8::Isolate::GetCurrent();
+	HandleScope scope(isolate);
 	modbus_t *ctx = static_cast<modbus_t *>(FROM_EXTERNAL(args[0]));
 	Local<Object> timeout_obj = Local<Object>::Cast(args[1]);
 	
@@ -158,6 +159,7 @@ void js_get_byte_timeout(const v8::FunctionCallbackInfo<v8::Value>& args) {
 // Undefined set_byte_timeout(External, Object);
 void js_set_byte_timeout(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	Isolate* isolate = v8::Isolate::GetCurrent();
+	HandleScope scope(isolate);
 	modbus_t *ctx = static_cast<modbus_t *>(FROM_EXTERNAL(args[0]));
 	Local<Object> timeout_obj = Local<Object>::Cast(args[1]);
 	
@@ -205,6 +207,7 @@ void js_get_header_length(const v8::FunctionCallbackInfo<v8::Value>& args) {
 // Undefined get_response_timeout(External, Object);
 void js_get_response_timeout(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	Isolate* isolate = v8::Isolate::GetCurrent();
+	HandleScope scope(isolate);
 	modbus_t *ctx = static_cast<modbus_t *>(FROM_EXTERNAL(args[0]));
 	Local<Object> timeout_obj = Local<Object>::Cast(args[1]);
 	
@@ -223,6 +226,7 @@ void js_get_response_timeout(const v8::FunctionCallbackInfo<v8::Value>& args) {
 // Undefined set_response_timeout(External, Object);
 void js_set_response_timeout(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	Isolate* isolate = v8::Isolate::GetCurrent();
+	HandleScope scope(isolate);
 	modbus_t *ctx = static_cast<modbus_t *>(FROM_EXTERNAL(args[0]));
 	Local<Object> timeout_obj = Local<Object>::Cast(args[1]);
 	
@@ -307,6 +311,7 @@ void js_flush(const v8::FunctionCallbackInfo<v8::Value>& args) {
 // Integer read_bits(External, Integer, Integer, Array);
 void js_read_bits(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	Isolate* isolate = v8::Isolate::GetCurrent();
+	HandleScope scope(isolate);
 	modbus_t *ctx = static_cast<modbus_t *>(FROM_EXTERNAL(args[0]));
 	int addr = Local<Integer>::Cast(args[1])->Int32Value();
 	int nb = Local<Integer>::Cast(args[2])->Int32Value();
@@ -324,6 +329,7 @@ void js_read_bits(const v8::FunctionCallbackInfo<v8::Value>& args) {
 // Integer read_input_bits(External, Integer, Integer, Array);
 void js_read_input_bits(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	Isolate* isolate = v8::Isolate::GetCurrent();
+	HandleScope scope(isolate);
 	modbus_t *ctx = static_cast<modbus_t *>(FROM_EXTERNAL(args[0]));
 	int addr = Local<Integer>::Cast(args[1])->Int32Value();
 	int nb = Local<Integer>::Cast(args[2])->Int32Value();
@@ -341,6 +347,7 @@ void js_read_input_bits(const v8::FunctionCallbackInfo<v8::Value>& args) {
 // Integer read_registers(External, Integer, Integer, Array);
 void js_read_registers(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	Isolate* isolate = v8::Isolate::GetCurrent();
+	HandleScope scope(isolate);
 	modbus_t *ctx = static_cast<modbus_t *>(FROM_EXTERNAL(args[0]));
 	int addr = Local<Integer>::Cast(args[1])->Int32Value();
 	int nb = Local<Integer>::Cast(args[2])->Int32Value();
@@ -358,6 +365,7 @@ void js_read_registers(const v8::FunctionCallbackInfo<v8::Value>& args) {
 // Integer read_input_registers(External, Integer, Integer, Array);
 void js_read_input_registers(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	Isolate* isolate = v8::Isolate::GetCurrent();
+	HandleScope scope(isolate);
 	modbus_t *ctx = static_cast<modbus_t *>(FROM_EXTERNAL(args[0]));
 	int addr = Local<Integer>::Cast(args[1])->Int32Value();
 	int nb = Local<Integer>::Cast(args[2])->Int32Value();
@@ -375,6 +383,7 @@ void js_read_input_registers(const v8::FunctionCallbackInfo<v8::Value>& args) {
 // Integer report_slave_id(External, Array);
 void js_report_slave_id(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	Isolate* isolate = v8::Isolate::GetCurrent();
+	HandleScope scope(isolate);
 	modbus_t *ctx = static_cast<modbus_t *>(FROM_EXTERNAL(args[0]));
 	Local<Array> dest_obj = Local<Array>::Cast(args[1]);
 	
@@ -452,6 +461,7 @@ void js_write_registers(const v8::FunctionCallbackInfo<v8::Value>& args) {
 // Integer write_and_read_registers(External, Integer, Integer, Array, Integer, Integer, Array);
 void js_write_and_read_registers(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	Isolate* isolate = v8::Isolate::GetCurrent();
+	HandleScope scope(isolate);
 	modbus_t *ctx = static_cast<modbus_t *>(FROM_EXTERNAL(args[0]));
 	int write_addr = Local<Integer>::Cast(args[1])->Int32Value();
 	int write_nb = Local<Integer>::Cast(args[2])->Int32Value();
@@ -493,6 +503,7 @@ void js_send_raw_request(const v8::FunctionCallbackInfo<v8::Value>& args) {
 // Integer receive_confirmation(External, Array);
 void js_receive_confirmation(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	Isolate* isolate = v8::Isolate::GetCurrent();
+	HandleScope scope(isolate);
 	modbus_t *ctx = static_cast<modbus_t *>(FROM_EXTERNAL(args[0]));
 	Local<Array> rsp_arr = Local<Array>::Cast(args[1]);
 	
@@ -555,6 +566,7 @@ void js_mapping_free(const v8::FunctionCallbackInfo<v8::Value>& args) {
 // Integer receive(External, Array);
 void js_receive(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	Isolate* isolate = v8::Isolate::GetCurrent();
+	HandleScope scope(isolate);
 	modbus_t *ctx = static_cast<modbus_t *>(FROM_EXTERNAL(args[0]));
 	Local<Array> req_arr = Local<Array>::Cast(args[1]);
 	
@@ -590,6 +602,7 @@ void js_reply(const v8::FunctionCallbackInfo<v8::Value>& args) {
 // String strerror();
 void js_strerror(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	Isolate* isolate = v8::Isolate::GetCurrent();
+	HandleScope scope(isolate);
 	const char *ret = modbus_strerror(errno);
 	
 	args.GetReturnValue().Set(v8::String::NewFromUtf8(isolate, ret));
@@ -643,6 +656,7 @@ void js_tcp_pi_accept(const v8::FunctionCallbackInfo<v8::Value>& args) {
 // Undefined map_to_json(External, Object);
 void map_to_json(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	Isolate* isolate = v8::Isolate::GetCurrent();
+	HandleScope scope(isolate);
 	modbus_mapping_t *map = static_cast<modbus_mapping_t *>(FROM_EXTERNAL(args[0]));
 	Local<Object> jso = Local<Object>::Cast(args[1]);
 	
@@ -683,6 +697,7 @@ void map_to_json(const v8::FunctionCallbackInfo<v8::Value>& args) {
 // Undefined json_to_map(Object, External);
 void json_to_map(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	Isolate* isolate = v8::Isolate::GetCurrent();
+	HandleScope scope(isolate);
 	Local<Object> jso = Local<Object>::Cast(args[0]);
 	modbus_mapping_t *map = static_cast<modbus_mapping_t *>(FROM_EXTERNAL(args[1]));
 	
@@ -728,6 +743,7 @@ void tcp_accept_w(uv_work_t* req) {
 
 void tcp_accept_a(uv_work_t* req, int arg) {
     Isolate* isolate = v8::Isolate::GetCurrent();
+    HandleScope scope(isolate);
     tcp_accept_t* request = (tcp_accept_t*)req->data;
     delete req;
 	
@@ -745,6 +761,7 @@ void tcp_accept_a(uv_work_t* req, int arg) {
 // callback function - Function(Integer);
 void tcp_accept_async(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	Isolate* isolate = v8::Isolate::GetCurrent();
+	HandleScope scope(isolate);
 	modbus_t *ctx = static_cast<modbus_t *>(FROM_EXTERNAL(args[0]));
 	int socket = Local<Integer>::Cast(args[1])->Int32Value();
 	Local<Function> cb = Local<Function>::Cast(args[2]);
@@ -776,6 +793,7 @@ void receive_w(uv_work_t* req) {
 
 void receive_a(uv_work_t* req, int arg) {
     Isolate* isolate = v8::Isolate::GetCurrent();
+    HandleScope scope(isolate);
     receive_t* request = (receive_t*)req->data;
     delete req;
 	
@@ -803,6 +821,7 @@ void receive_a(uv_work_t* req, int arg) {
 // callback function - Function(Array, Integer);
 void receive_async(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	Isolate* isolate = v8::Isolate::GetCurrent();
+	HandleScope scope(isolate);
 	modbus_t *ctx = static_cast<modbus_t *>(FROM_EXTERNAL(args[0]));
 	Local<Function> cb = Local<Function>::Cast(args[1]);
 	
@@ -836,6 +855,7 @@ void connect_w(uv_work_t* req) {
 
 void connect_a(uv_work_t* req, int arg) {
     Isolate* isolate = v8::Isolate::GetCurrent();
+    HandleScope scope(isolate);
     connect_t* request = (connect_t*)req->data;
     delete req;
 	
@@ -853,6 +873,7 @@ void connect_a(uv_work_t* req, int arg) {
 // callback function - Function(Integer);
 void connect_async(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	Isolate* isolate = v8::Isolate::GetCurrent();
+	HandleScope scope(isolate);
 	modbus_t *ctx = static_cast<modbus_t *>(FROM_EXTERNAL(args[0]));
 	Local<Function> cb = Local<Function>::Cast(args[1]);
 	
@@ -882,6 +903,7 @@ void close_mt(const v8::FunctionCallbackInfo<v8::Value>& args) {
 // Decode HEX value to a float or double
 void hex_decode(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	Isolate* isolate = v8::Isolate::GetCurrent();
+	HandleScope scope(isolate);
 	int nArgs = args.Length();
 
 	if (nArgs != 2 && nArgs != 4) {
