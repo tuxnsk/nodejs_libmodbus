@@ -166,7 +166,7 @@ void js_set_byte_timeout(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	struct timeval timeout;
 	timeout.tv_sec = timeout_obj->Get(String::NewFromUtf8(isolate, "tv_sec"))->Uint32Value();
 	timeout.tv_usec = timeout_obj->Get(String::NewFromUtf8(isolate, "tv_usec"))->Uint32Value();
-	modbus_get_byte_timeout(ctx, &timeout);
+	modbus_set_byte_timeout(ctx, &timeout);
 	
 	args.GetReturnValue().SetUndefined();
 }
