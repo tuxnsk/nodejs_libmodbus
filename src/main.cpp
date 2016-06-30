@@ -144,10 +144,15 @@ void js_get_byte_timeout(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	modbus_t *ctx = static_cast<modbus_t *>(FROM_EXTERNAL(args[0]));
 	Local<Object> timeout_obj = Local<Object>::Cast(args[1]);
 	
+
+	uint32_t sec = 0;
+	uint32_t usec = 0;
+
+	modbus_get_byte_timeout(ctx, &sec, &usec);
+
 	struct timeval timeout;
-	timeout.tv_sec = 0;
-	timeout.tv_usec = 0;
-	modbus_get_byte_timeout(ctx, &timeout);
+	timeout.tv_sec = sec;
+	timeout.tv_usec = usec;
 	
 	timeout_obj->Set(String::NewFromUtf8(isolate, "tv_sec"), Uint32::New(isolate, timeout.tv_sec));
 	timeout_obj->Set(String::NewFromUtf8(isolate, "tv_usec"), Uint32::New(isolate, timeout.tv_usec));
@@ -166,7 +171,8 @@ void js_set_byte_timeout(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	struct timeval timeout;
 	timeout.tv_sec = timeout_obj->Get(String::NewFromUtf8(isolate, "tv_sec"))->Uint32Value();
 	timeout.tv_usec = timeout_obj->Get(String::NewFromUtf8(isolate, "tv_usec"))->Uint32Value();
-	modbus_set_byte_timeout(ctx, &timeout);
+
+	modbus_set_byte_timeout(ctx, timeout.tv_sec, timeout.tv_usec);
 	
 	args.GetReturnValue().SetUndefined();
 }
@@ -211,10 +217,14 @@ void js_get_response_timeout(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	modbus_t *ctx = static_cast<modbus_t *>(FROM_EXTERNAL(args[0]));
 	Local<Object> timeout_obj = Local<Object>::Cast(args[1]);
 	
+	uint32_t sec = 0;
+	uint32_t usec = 0;
+
+	modbus_get_response_timeout(ctx, &sec, &usec);
+
 	struct timeval timeout;
-	timeout.tv_sec = 0;
-	timeout.tv_usec = 0;
-	modbus_get_response_timeout(ctx, &timeout);
+	timeout.tv_sec = sec;
+	timeout.tv_usec = usec;
 	
 	timeout_obj->Set(String::NewFromUtf8(isolate, "tv_sec"), Uint32::New(isolate, timeout.tv_sec));
 	timeout_obj->Set(String::NewFromUtf8(isolate, "tv_usec"), Uint32::New(isolate, timeout.tv_usec));
@@ -233,7 +243,7 @@ void js_set_response_timeout(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	struct timeval timeout;
 	timeout.tv_sec = timeout_obj->Get(String::NewFromUtf8(isolate, "tv_sec"))->Uint32Value();
 	timeout.tv_usec = timeout_obj->Get(String::NewFromUtf8(isolate, "tv_usec"))->Uint32Value();
-	modbus_set_response_timeout(ctx, &timeout);
+	modbus_set_response_timeout(ctx, timeout.tv_sec, timeout.tv_usec);
 	
 	args.GetReturnValue().SetUndefined();
 }
@@ -379,18 +389,19 @@ void js_read_input_registers(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	args.GetReturnValue().Set(ret);
 }
 
-// int modbus_report_slave_id(modbus_t *ctx, uint8_t *dest);
-// Integer report_slave_id(External, Array);
+// int modbus_report_slave_id(modbus_t *ctx, int max_dest, uint8_t *dest);
+// Integer report_slave_id(External, Array, Integer);
 void js_report_slave_id(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	Isolate* isolate = v8::Isolate::GetCurrent();
 	HandleScope scope(isolate);
 	modbus_t *ctx = static_cast<modbus_t *>(FROM_EXTERNAL(args[0]));
 	Local<Array> dest_obj = Local<Array>::Cast(args[1]);
+	int max_dest = Local<Integer>::Cast(args[2])->Int32Value();
 	
 	uint8_t dest[REPORT_LEN];
     memset(dest, 0, REPORT_LEN * sizeof(uint8_t));
 	
-	int ret = modbus_report_slave_id(ctx, dest);
+	int ret = modbus_report_slave_id(ctx, max_dest, dest);
 	
 	if (ret > 0) dest_obj->Set(0, Integer::New(isolate, dest[0])); // Slave ID
 	if (ret > 1) dest_obj->Set(1, Integer::New(isolate, dest[1])); // Run Status Indicator
@@ -891,11 +902,11 @@ void connect_async(const v8::FunctionCallbackInfo<v8::Value>& args) {
 }
 
 // закрыть из треда
-// Undefined close_mt(External);
+// Undefined close(External);
 void close_mt(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	modbus_t *ctx = static_cast<modbus_t *>(FROM_EXTERNAL(args[0]));
 	
-	modbus_close_mt(ctx);
+	modbus_close(ctx);
 	
 	args.GetReturnValue().SetUndefined();
 }
@@ -953,7 +964,7 @@ extern "C" void init (Handle<Object> target) {
 	
 	target->Set(String::NewFromUtf8(isolate, "MODBUS_MAX_READ_REGISTERS"), Number::New(isolate, MODBUS_MAX_READ_REGISTERS));
 	target->Set(String::NewFromUtf8(isolate, "MODBUS_MAX_WRITE_REGISTERS"), Number::New(isolate, MODBUS_MAX_WRITE_REGISTERS));
-	target->Set(String::NewFromUtf8(isolate, "MODBUS_MAX_RW_WRITE_REGISTERS"), Number::New(isolate, MODBUS_MAX_RW_WRITE_REGISTERS));
+	target->Set(String::NewFromUtf8(isolate, "MODBUS_MAX_WR_WRITE_REGISTERS"), Number::New(isolate, MODBUS_MAX_WR_WRITE_REGISTERS));
 	
 	target->Set(String::NewFromUtf8(isolate, "MODBUS_ENOBASE"), Number::New(isolate, MODBUS_ENOBASE));
 	
