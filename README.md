@@ -1,6 +1,9 @@
 
 Sorry for my bad english. I need help to correct text. My contacts: http://tuxnsk.ru/
 
+# News #
+Fix bindings to libmodbus 3.1.4.
+
 # About #
 This is binding to native library libmodbus (http://libmodbus.org/).
 
