@@ -4,7 +4,7 @@ var mb = require("./build/Release/modbus_binding");
 
 //var DBG = true;
 var DBG = false;
-
+var data_query;
 var log = console.log;
 
 function dataChange(a, args) {
@@ -663,6 +663,7 @@ function createData(a, args) {
 	
 	// внутренние функции
 	api._reply = function (ctx, query, len) {
+		data_query = query;
 		mb.reply(ctx, query, len, map);
 		read(); // FIXME: делается в геттерах
 	};
@@ -1083,7 +1084,12 @@ function create() {
 		// создать ведомое устройство (серер)
 		createSlave: function (args) {			
 			return createSlave(ctxParam, args);
+		},
+
+		query: function () {
+		  return data_query;
 		}
+
 	};
 }
 
