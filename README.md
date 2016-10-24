@@ -36,7 +36,7 @@ var ctx = mb.createSlave({
 
   // callback functions
   onQuery: function () {
-    log('onQuery');
+    log('onQuery', mb.query());
     //ctx.dumpData();
     log(ctx.getBits(0, 2));
   },
