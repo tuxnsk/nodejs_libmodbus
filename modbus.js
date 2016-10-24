@@ -326,7 +326,7 @@ function dataChange(a, args) {
 				return;
 			}
 			
-			jso.tab_registers[adr] = val;
+			jso.tab_input_registers[adr] = val;
 		} else {
 			a.err(func + ': permission denied');
 		}
