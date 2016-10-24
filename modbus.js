@@ -4,7 +4,7 @@ var mb = require("./build/Release/modbus_binding");
 
 //var DBG = true;
 var DBG = false;
-
+var data_query;
 var log = console.log;
 
 function dataChange(a, args) {
@@ -663,6 +663,7 @@ function createData(a, args) {
 	
 	// внутренние функции
 	api._reply = function (ctx, query, len) {
+		data_query = query;
 		mb.reply(ctx, query, len, map);
 		read(); // FIXME: делается в геттерах
 	};
@@ -688,13 +689,15 @@ function createConTcp(ip, port, max) {
 	};
 };
 
-function createConRtu(id, device, baud, parity, dataBit, stopBit) {
+function createConRtu(id, device, baud, parity, dataBit, stopBit, serialMode, rts) {
 	if (!id) id = 1;
 	if (!device) device = '/dev/ttyS0';
 	if (!baud) baud = 115200;
 	if (!parity) parity = 'N';
 	if (!dataBit) dataBit = 8;
 	if (!stopBit) stopBit = 1;
+    if (!serialMode) serialMode = mb.MODBUS_RTU_RS232;
+    if (!rts) rts = mb.MODBUS_RTU_RTS_NONE;
 	
 	return {
 		type: 'RTU',
@@ -703,7 +706,9 @@ function createConRtu(id, device, baud, parity, dataBit, stopBit) {
 		baud: baud,
 		parity: parity,
 		dataBit: dataBit,
-		stopBit: stopBit
+		stopBit: stopBit,
+        serialMode: serialMode,
+        rts: rts
 	};
 };
 
@@ -833,6 +838,10 @@ function createSlaveRtu(a, con, data, cbs) {
 		
 		// очищаем буфер
 		mb.flush(ctx);
+
+        // set serial modes
+        mb.rtu_set_serial_mode(ctx, con.serialMode);
+        mb.rtu_set_rts(ctx, con.rts);
 		
 		isWorking = true;
 		
@@ -1016,6 +1025,10 @@ function createMasterRtu(a, con, cbs) {
 		
 		// очищаем буфер
 		mb.flush(ctx);
+
+        // set serial modes
+        mb.rtu_set_serial_mode(ctx, con.serialMode);
+        mb.rtu_set_rts(ctx, con.rts);
 		
 		isWorking = true;
 		
@@ -1083,7 +1096,12 @@ function create() {
 		// создать ведомое устройство (серер)
 		createSlave: function (args) {			
 			return createSlave(ctxParam, args);
+		},
+
+		query: function () {
+		  return data_query;
 		}
+
 	};
 }
 

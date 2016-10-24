@@ -75,7 +75,6 @@ void js_rtu_set_serial_mode(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	args.GetReturnValue().Set(ret);
 }
 
-/*
 // int modbus_rtu_get_rts(modbus_t *ctx);
 void js_rtu_get_rts(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	modbus_t *ctx = static_cast<modbus_t *>(FROM_EXTERNAL(args[0]));
@@ -94,7 +93,6 @@ void js_rtu_set_rts(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	
 	args.GetReturnValue().Set(ret);
 }
-*/
 
 // modbus_t *modbus_new_tcp(const char *ip, int port);
 // External new_tcp(String, Integer);
@@ -1014,8 +1012,8 @@ extern "C" void init (Handle<Object> target) {
 	target->Set(String::NewFromUtf8(isolate, "new_rtu"), FunctionTemplate::New(isolate, js_new_rtu)->GetFunction());
 	target->Set(String::NewFromUtf8(isolate, "rtu_get_serial_mode"), FunctionTemplate::New(isolate, js_rtu_get_serial_mode)->GetFunction());
 	target->Set(String::NewFromUtf8(isolate, "rtu_set_serial_mode"), FunctionTemplate::New(isolate, js_rtu_set_serial_mode)->GetFunction());
-	//target->Set(String::NewFromUtf8(isolate, "rtu_get_rts"), FunctionTemplate::New(isolate, js_rtu_get_rts)->GetFunction());
-	//target->Set(String::NewFromUtf8(isolate, "rtu_set_rts"), FunctionTemplate::New(isolate, js_rtu_set_rts)->GetFunction());
+	target->Set(String::NewFromUtf8(isolate, "rtu_get_rts"), FunctionTemplate::New(isolate, js_rtu_get_rts)->GetFunction());
+	target->Set(String::NewFromUtf8(isolate, "rtu_set_rts"), FunctionTemplate::New(isolate, js_rtu_set_rts)->GetFunction());
 	
 	target->Set(String::NewFromUtf8(isolate, "new_tcp"), FunctionTemplate::New(isolate, js_new_tcp)->GetFunction());
 	target->Set(String::NewFromUtf8(isolate, "new_tcp_pi"), FunctionTemplate::New(isolate, js_new_tcp_pi)->GetFunction());
