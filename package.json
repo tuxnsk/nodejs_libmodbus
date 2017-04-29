@@ -1,6 +1,6 @@
 {
   "name": "modbus",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "description": "libmodbus binding",
   "keywords": [
     "modbus"

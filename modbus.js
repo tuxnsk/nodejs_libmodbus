@@ -676,16 +676,18 @@ function createData(a, args) {
 	return api;
 };
 
-function createConTcp(ip, port, max) {
+function createConTcp(ip, port, max, slaveAddr) {
 	if (!ip) ip = '127.0.0.1';
 	if (!port) port = mb.MODBUS_TCP_DEFAULT_PORT;
 	if (!max) max = 1;
+	if (!slaveAddr) slaveAddr = 0xFF;
 	
 	return {
 		type: 'TCP',
 		ip: ip,
 		port: port,
-		max: max
+		max: max,
+		slaveAddr: slaveAddr // нужен некоторым устройствам, к примеру сетевкам segnetics-а
 	};
 };
 
@@ -980,6 +982,8 @@ function createMasterTcp(a, con, cbs) {
 		}
 		
 		isWorking = true;
+
+		mb.set_slave(ctx, con.slaveAddr);
 		
 		if (cbs.onConnect) cbs.onConnect(api);
 	});
@@ -1061,8 +1065,10 @@ function hexDecode(resp) {
 	return mb.hex_decode.apply(null, resp);
 }
 
-function create() {
+function create(isDbg) {
 	var onError = null; // функция - обработчик ошибок
+	
+	if (isDbg) DBG = true;
 	
 	function err(msg) {
 		if (onError) onError(msg);

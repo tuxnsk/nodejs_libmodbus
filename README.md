@@ -1,5 +1,4 @@
 
-Sorry for my bad english. I need help to correct text. My contacts: http://tuxnsk.ru/
 
 # News #
 Fix bindings to libmodbus 3.1.4.
@@ -55,6 +54,7 @@ var ctx = mb.createSlave({
 
 ```javascript
 var log = console.log;
+//var mb = require('modbus').create(true); // enable debug output
 var mb = require('modbus').create();
 
 mb.onError(function (msg) {
@@ -166,11 +166,12 @@ setInputRegs(adr, val) - set read only registers array value
 
 dumpData() - show memory dump
 
-## createConTcp(ip, port, max) ##
+## createConTcp(ip, port, max, slaveAddr) ##
 Create connection object for tcp connection.
 * ip[String] - ip address modbus slave device, default "127.0.0.1"
 * port[Number] - tcp port modbus slave device, default 502
 * max[Number] - max connections for slave device, default 1
+* slaveAddr[Number] - set slave device address, default 0xFF (need for some devices, e.g. segnetics)
 
 ## createConRtu(id, device, baud, parity, dataBit, stopBit) ##
 Create connection object for serial port connection.
