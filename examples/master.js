@@ -1,6 +1,7 @@
 'use strict';
 
 var log = console.log;
+//var mb = require('../modbus.js').create(true); // enable debug output
 var mb = require('../modbus.js').create();
 
 mb.onError(function (msg) {
